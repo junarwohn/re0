@@ -636,8 +636,8 @@ node * insert_into_leaf_after_splitting(pagenum_t lpn, int key, char * value) {
     for (i = new_lp.kcnt; i < order - 1; i++)
         new_lp.records[i] = null_record;
 
-    new_lp->ppn = lp->ppn;
-    new_key = new_lp->record[0].key;
+    new_lp.ppn = lp.ppn;
+    new_key = new_lp.record[0].key;
 
     return insert_into_parent(lpn, new_key, new_lpn);
 }
@@ -1184,7 +1184,8 @@ node * redistribute_nodes(node * root, node * n, node * neighbor, int neighbor_i
  * from the leaf, and then makes all appropriate
  * changes to preserve the B+ tree properties.
  */
-node * delete_entry( node * root, node * n, int key, void * pointer ) {
+//node * delete_entry( node * root, node * n, int key, void * pointer ) {
+void delete_entry(pagenum_t pn, int key, void * pointer ) {
 
     int min_keys;
     node * neighbor;
@@ -1253,24 +1254,24 @@ node * delete_entry( node * root, node * n, int key, void * pointer ) {
         return redistribute_nodes(root, n, neighbor, neighbor_index, k_prime_index, k_prime);
 }
 
-
-
 /* Master deletion function.
  */
-node * delete(node * root, int key) {
+int db_delete(int64_t key) {
 
+    pagenum_t key_leaf_pn;
     node * key_leaf;
-    Record * key_record;
+    //Record * key_record = (Record*)malloc(sizeof(Record));
+    char key_record[120];
 
-    key_record = find(root, key, false);
-    key_leaf = find_leaf(root, key, false);
-    if (key_record != NULL && key_leaf != NULL) {
-        root = delete_entry(root, key_leaf, key, key_record);
-        free(key_record);
+   // key_record = db_find(key, ret_val);
+    db_find(key, ret_val);
+    key_leaf_pn = find_leaf(key, false);
+    if (key_record != NULL && key_leaf_pn >= 0) {
+        delete_entry(key_leaf_pn, key, key_record);
+        //free(key_record);
     }
     return root;
 }
-
 
 void destroy_tree_nodes(node * root) {
     int i;
